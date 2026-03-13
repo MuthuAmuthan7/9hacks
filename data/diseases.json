@@ -1,0 +1,330 @@
+[
+  {
+    "disease": "Influenza",
+    "symptoms": [
+      "fever",
+      "headache",
+      "body ache",
+      "chills",
+      "fatigue",
+      "cough",
+      "sore throat",
+      "runny nose"
+    ],
+    "recommended_questions": [
+      "How long have you had fever?",
+      "What is your current body temperature?",
+      "Do you have cough? If so, is it dry or with phlegm?",
+      "Any breathing difficulty or chest pain?",
+      "Have you been in contact with anyone who was sick?",
+      "Did you receive the flu vaccine this year?",
+      "Do you have any chronic medical conditions?",
+      "Are you taking any medications?",
+      "When did your symptoms start?",
+      "Have you tried any medications? If so, which ones?"
+    ],
+    "treatments": [
+      "paracetamol or ibuprofen for fever and pain",
+      "rest and sleep",
+      "hydration with fluids",
+      "antiviral medications like oseltamivir if within 48 hours of onset",
+      "steam inhalation for congestion",
+      "avoid strenuous activity",
+      "monitor for warning signs of complications"
+    ]
+  },
+  {
+    "disease": "Migraine",
+    "symptoms": [
+      "severe headache",
+      "throbbing pain",
+      "sensitivity to light",
+      "sensitivity to sound",
+      "nausea",
+      "vomiting",
+      "visual disturbances",
+      "aura"
+    ],
+    "recommended_questions": [
+      "Where exactly is the pain located?",
+      "How severe is the pain on a scale of 1-10?",
+      "Does the pain throb or is it constant?",
+      "How long do your headaches typically last?",
+      "How often do you get these headaches?",
+      "Do you experience any warning signs before the headache starts?",
+      "Do you have sensitivity to light or sound during the headache?",
+      "Do you experience any visual changes?",
+      "Have you had these headaches before?",
+      "What triggers your headaches?",
+      "What medications have you tried for this?",
+      "Do you have any family history of migraines?",
+      "Are you under any unusual stress?",
+      "Has there been any recent change in your sleep pattern?"
+    ],
+    "treatments": [
+      "triptans such as sumatriptan or zolmitriptan",
+      "rest in a dark, quiet room",
+      "cold compress on the head",
+      "hydration and avoiding caffeine withdrawal",
+      "prophylactic medications like propranolol for frequent migraines",
+      "lifestyle modifications to avoid triggers",
+      "stress management techniques",
+      "regular sleep schedule"
+    ]
+  },
+  {
+    "disease": "Pneumonia",
+    "symptoms": [
+      "cough",
+      "fever",
+      "chest pain",
+      "shortness of breath",
+      "chills",
+      "fatigue",
+      "sputum production",
+      "difficulty breathing",
+      "rapid breathing"
+    ],
+    "recommended_questions": [
+      "How long have you had this cough?",
+      "Are you coughing up any sputum? What color is it?",
+      "Do you have any chest pain? Where exactly?",
+      "Does the pain change with breathing or coughing?",
+      "Are you experiencing shortness of breath?",
+      "What is your current temperature?",
+      "Have you had any recent respiratory infections?",
+      "Do you smoke?",
+      "Do you have any chronic lung conditions?",
+      "Have you been exposed to anyone with respiratory illness?",
+      "Do you have any medical conditions like diabetes or heart disease?",
+      "Are you on any medications?",
+      "Have you had any recent surgery or hospitalization?",
+      "Any night sweats or weight loss recently?"
+    ],
+    "treatments": [
+      "antibiotics appropriate to the causative organism",
+      "rest and sleep",
+      "maintain hydration",
+      "oxygen therapy if oxygen saturation is low",
+      "fever management with paracetamol or ibuprofen",
+      "cough suppressants if needed",
+      "hospitalization if severe",
+      "chest physiotherapy in some cases",
+      "vaccination for prevention"
+    ]
+  },
+  {
+    "disease": "Tuberculosis",
+    "symptoms": [
+      "persistent cough",
+      "cough lasting more than 3 weeks",
+      "hemoptysis",
+      "chest pain",
+      "fever",
+      "night sweats",
+      "weight loss",
+      "fatigue",
+      "loss of appetite"
+    ],
+    "recommended_questions": [
+      "How long have you had this persistent cough?",
+      "Are you coughing up blood or blood-tinged sputum?",
+      "Do you have night sweats that drench your clothes?",
+      "Have you experienced unintended weight loss? How much?",
+      "When did you start feeling unwell?",
+      "Do you have any chest pain? When does it occur?",
+      "Have you had fever? What is your temperature?",
+      "Have you been exposed to anyone diagnosed with TB?",
+      "Do you live in crowded conditions?",
+      "Do you have HIV/AIDS or immunosuppression?",
+      "Do you have diabetes or other chronic diseases?",
+      "Are you on any immunosuppressive medications?",
+      "Have you traveled to high TB incidence areas?",
+      "What work do you do? Any occupational exposures?"
+    ],
+    "treatments": [
+      "anti-tuberculosis drug regimen",
+      "isoniazid for minimum 6 months",
+      "rifampicin for minimum 6 months",
+      "pyrazinamide for initial 2 months",
+      "ethambutol for initial 2 months",
+      "regular monitoring for drug side effects",
+      "directly observed therapy",
+      "nutritional support",
+      "isolation during infectious period",
+      "contact tracing and prophylaxis for exposed persons"
+    ]
+  },
+  {
+    "disease": "Food Poisoning",
+    "symptoms": [
+      "nausea",
+      "vomiting",
+      "diarrhea",
+      "abdominal pain",
+      "abdominal cramping",
+      "fever",
+      "weakness",
+      "loss of appetite",
+      "dehydration"
+    ],
+    "recommended_questions": [
+      "When did your symptoms start?",
+      "What did you eat in the last 24-48 hours?",
+      "Where did you eat the meal that you suspect caused this?",
+      "Have other people who ate the same food become sick?",
+      "What symptoms are you experiencing?",
+      "How many times have you vomited?",
+      "How many times have you had diarrhea?",
+      "Is the diarrhea watery or bloody?",
+      "Are you experiencing abdominal pain? Where?",
+      "Do you have fever? What is your temperature?",
+      "Are you able to keep fluids down?",
+      "Do you have any underlying medical conditions?",
+      "Are you on any medications?",
+      "Have you recently traveled outside your usual area?",
+      "Do you have any signs of severe dehydration?"
+    ],
+    "treatments": [
+      "oral rehydration therapy with water and electrolytes",
+      "rest and recovery",
+      "avoid solid foods initially",
+      "gradual return to mild foods like crackers and broth",
+      "probiotics may help restore gut flora",
+      "antidiarrheal medications like loperamide only if needed",
+      "antiemetics for severe vomiting",
+      "intravenous fluids if severe dehydration",
+      "antibiotics only if bacterial infection confirmed",
+      "prevent spread to others through hygiene",
+      "seek medical care if symptoms persist beyond 48 hours"
+    ]
+  },
+  {
+    "disease": "Type 2 Diabetes",
+    "symptoms": [
+      "increased thirst",
+      "frequent urination",
+      "fatigue",
+      "blurred vision",
+      "slow healing wounds",
+      "numbness in feet",
+      "weight gain",
+      "increased hunger"
+    ],
+    "recommended_questions": [
+      "How long have you noticed these symptoms?",
+      "Have you experienced unusual thirst or increased urination?",
+      "Have you noticed any unexplained weight changes?",
+      "Do you have family history of diabetes?",
+      "When was your last blood sugar check?",
+      "Have you experienced any vision changes?",
+      "Do you have any numbness or tingling in hands or feet?",
+      "Have you noticed slow healing of cuts or wounds?",
+      "What is your typical diet like?",
+      "How much physical activity do you get weekly?",
+      "Do you have high blood pressure?",
+      "What medications are you currently taking?",
+      "Have you been diagnosed with prediabetes previously?",
+      "Do you experience unusual fatigue?"
+    ],
+    "treatments": [
+      "dietary modifications reducing sugar and refined carbohydrates",
+      "regular physical activity at least 150 minutes per week",
+      "weight management through calorie control",
+      "oral hypoglycemic agents like metformin",
+      "sulfonylureas or DPP-4 inhibitors if needed",
+      "regular blood glucose monitoring",
+      "annual eye screening for diabetic retinopathy",
+      "regular kidney function tests",
+      "foot care and neuropathy screening",
+      "management of blood pressure and cholesterol",
+      "diabetes education and counseling"
+    ]
+  },
+  {
+    "disease": "Asthma",
+    "symptoms": [
+      "wheezing",
+      "shortness of breath",
+      "chest tightness",
+      "coughing",
+      "difficulty breathing",
+      "rapid breathing",
+      "fatigue",
+      "nighttime cough"
+    ],
+    "recommended_questions": [
+      "How long have you been experiencing wheezing?",
+      "When do you experience shortness of breath? During activity or at rest?",
+      "Do you have a cough? Is it worse at night or during physical activity?",
+      "Do you experience chest tightness?",
+      "How often do you have asthma symptoms per week?",
+      "What triggers your symptoms?",
+      "Have you been diagnosed with asthma before?",
+      "Do family members have asthma or allergies?",
+      "Are you exposed to any allergens at home or work?",
+      "Are you a smoker or exposed to secondhand smoke?",
+      "Do you have any allergic rhinitis or eczema?",
+      "What medications have you tried?",
+      "Have you ever had a severe asthma attack?",
+      "Do you have a peak flow meter or spirometry results?"
+    ],
+    "treatments": [
+      "inhaled corticosteroids as controller medication",
+      "short-acting beta-2 agonists as rescue medication",
+      "long-acting beta-2 agonists for maintenance",
+      "leukotriene receptor antagonists",
+      "ipratropium for severe cases",
+      "identification and avoidance of triggers",
+      "regular monitoring with peak flow meter",
+      "asthma action plan with clear medication instructions",
+      "immunotherapy if allergic triggers identified",
+      "smoking cessation if applicable",
+      "vaccination against influenza and pneumococcus",
+      "avoiding NSAIDs if aspirin-sensitive asthma"
+    ]
+  },
+  {
+    "disease": "Gastroesophageal Reflux Disease",
+    "symptoms": [
+      "heartburn",
+      "chest pain",
+      "regurgitation",
+      "difficulty swallowing",
+      "nausea",
+      "sensation of lump in throat",
+      "hoarseness",
+      "cough"
+    ],
+    "recommended_questions": [
+      "How often do you experience heartburn?",
+      "When do the symptoms typically occur?",
+      "Does lying down or bending over make it worse?",
+      "What foods trigger your symptoms?",
+      "Do you experience regurgitation of food or acid?",
+      "Have you experienced any difficulty swallowing?",
+      "Do you have any hoarseness or sore throat?",
+      "Do you have a chronic cough?",
+      "How much caffeine do you consume daily?",
+      "Do you smoke?",
+      "What is your typical meal size and timing?",
+      "Are you overweight?",
+      "Do you take any medications like NSAIDs or bisphosphonates?",
+      "Have you tried any treatments? What worked?"
+    ],
+    "treatments": [
+      "lifestyle modifications: smaller meals, elevation of head while sleeping",
+      "avoid trigger foods: spicy, fatty, acidic foods",
+      "avoid caffeine, chocolate, and alcohol",
+      "weight loss if overweight",
+      "antacids for acute symptoms",
+      "H2 receptor antagonists like ranitidine",
+      "proton pump inhibitors like omeprazole",
+      "prokinetic agents if needed",
+      "smoking cessation",
+      "avoid eating 3-4 hours before sleep",
+      "endoscopy if warning signs present",
+      "surgery if refractory to medical management"
+    ]
+  }
+]
