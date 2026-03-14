@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from st_audiorec import st_audiorec
 
 API_BASE_URL = "http://localhost:8000/api"
 
@@ -28,6 +29,21 @@ def api_call(method, endpoint, **kwargs):
         return None
 
 
+def transcribe_audio(audio_bytes: bytes) -> str | None:
+    """Send audio bytes to the backend STT endpoint and return the transcribed text."""
+    try:
+        resp = requests.post(
+            f"{API_BASE_URL}/speech_to_text",
+            files={"file": ("recording.wav", audio_bytes, "audio/wav")},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        return resp.json().get("text", "").strip() or None
+    except Exception as e:
+        st.error(f"Speech-to-text failed: {e}")
+        return None
+
+
 def init_session_state():
     """Initialize session state variables."""
     defaults = {
@@ -36,6 +52,7 @@ def init_session_state():
         "messages": [],
         "evaluation": None,
         "disease_revealed": None,
+        "voice_text": None,
     }
     for key, val in defaults.items():
         if key not in st.session_state:
@@ -94,6 +111,21 @@ def inject_css():
         padding: 0.8rem;
         margin: 0.5rem 0;
     }
+    .voice-section {
+        background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #bbdefb;
+    }
+    .voice-transcript {
+        background: #fff;
+        border-radius: 8px;
+        padding: 0.8rem;
+        margin-top: 0.5rem;
+        border-left: 4px solid #1565C0;
+        font-style: italic;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -126,6 +158,7 @@ def render_sidebar():
                 ]
                 st.session_state.evaluation = None
                 st.session_state.disease_revealed = None
+                st.session_state.voice_text = None
                 st.rerun()
 
         # Case status
@@ -164,6 +197,30 @@ def render_sidebar():
             st.info("Click **Start New Case** to begin.")
 
 
+def _send_doctor_message(prompt: str):
+    """Send a doctor message and get the patient's response."""
+    # Show doctor message immediately
+    with st.chat_message("user", avatar="🩺"):
+        st.markdown(prompt)
+    st.session_state.messages.append({"role": "doctor", "content": prompt})
+
+    # Get patient response
+    with st.chat_message("assistant", avatar="🤒"):
+        with st.spinner("Patient is responding..."):
+            data = api_call("POST", "/doctor_input", json={
+                "case_id": st.session_state.case_id,
+                "doctor_text": prompt,
+            })
+        if data:
+            st.markdown(data["patient_response"])
+            st.session_state.messages.append({
+                "role": "patient",
+                "content": data["patient_response"],
+            })
+        else:
+            st.warning("Failed to get a response. Try again.")
+
+
 def render_chat_tab():
     """Render the consultation chat tab."""
     if not st.session_state.case_id:
@@ -192,29 +249,42 @@ def render_chat_tab():
             with st.chat_message("assistant", avatar="🤒"):
                 st.markdown(msg["content"])
 
-    # Chat input
+    # Voice + Chat input
     if st.session_state.case_active:
-        if prompt := st.chat_input("Ask the patient a question..."):
-            # Show doctor message immediately
-            with st.chat_message("user", avatar="🩺"):
-                st.markdown(prompt)
-            st.session_state.messages.append({"role": "doctor", "content": prompt})
+        # ── Voice input section ──────────────────────────────────────────
+        with st.expander("🎤 Voice Input — click to speak your question", expanded=False):
+            st.markdown(
+                '<div class="voice-section">'
+                "<b>Record your question:</b> Click the microphone, speak, then stop recording."
+                "</div>",
+                unsafe_allow_html=True,
+            )
+            audio_bytes = st_audiorec()
 
-            # Get patient response
-            with st.chat_message("assistant", avatar="🤒"):
-                with st.spinner("Patient is responding..."):
-                    data = api_call("POST", "/doctor_input", json={
-                        "case_id": st.session_state.case_id,
-                        "doctor_text": prompt,
-                    })
-                if data:
-                    st.markdown(data["patient_response"])
-                    st.session_state.messages.append({
-                        "role": "patient",
-                        "content": data["patient_response"],
-                    })
+            if audio_bytes:
+                with st.spinner("🔄 Transcribing your speech..."):
+                    transcription = transcribe_audio(audio_bytes)
+
+                if transcription:
+                    st.markdown(
+                        f'<div class="voice-transcript">📝 <b>You said:</b> {transcription}</div>',
+                        unsafe_allow_html=True,
+                    )
+                    if st.button("✅ Send this to the patient", key="send_voice", type="primary"):
+                        st.session_state.voice_text = transcription
+                        st.rerun()
                 else:
-                    st.warning("Failed to get a response. Try again.")
+                    st.warning("Could not transcribe audio. Please try again or type your question below.")
+
+        # If a voice message is pending, send it
+        if st.session_state.voice_text:
+            prompt = st.session_state.voice_text
+            st.session_state.voice_text = None
+            _send_doctor_message(prompt)
+
+        # ── Regular text chat input ──────────────────────────────────────
+        if prompt := st.chat_input("Ask the patient a question..."):
+            _send_doctor_message(prompt)
     else:
         st.info("This case has been evaluated. Start a new case from the sidebar.")
 

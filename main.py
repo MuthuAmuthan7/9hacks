@@ -6,7 +6,7 @@ import chromadb_patch  # noqa: F401
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from backend.routes import conversation
+from backend.routes import conversation, speech_to_text
 from backend.services.rag import get_rag_service
 import config
 
@@ -53,6 +53,7 @@ app.add_middleware(
 
 # Include routes
 app.include_router(conversation.router)
+app.include_router(speech_to_text.router)
 
 
 # Root endpoint
