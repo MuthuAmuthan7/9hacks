@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class CaseModel(BaseModel):
@@ -10,14 +10,14 @@ class CaseModel(BaseModel):
     symptoms: List[str] = Field(..., description="Patient symptoms")
     recommended_questions: List[str] = Field(..., description="Questions doctor should ask")
     treatments: List[str] = Field(..., description="Recommended treatments")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ConversationMessage(BaseModel):
     """Conversation message model."""
     role: str = Field(..., description="Either 'doctor' or 'patient'")
     content: str = Field(..., description="Message content")
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class EvaluationResult(BaseModel):

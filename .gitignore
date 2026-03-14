@@ -45,6 +45,9 @@ Thumbs.db
 # Qdrant Storage
 qdrant/
 
+# ChromaDB Storage
+chroma_data/
+
 # Logs
 *.log
 logs/

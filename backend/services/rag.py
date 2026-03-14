@@ -2,7 +2,7 @@
 RAG (Retrieval Augmented Generation) service for medical knowledge retrieval.
 """
 from typing import List, Optional
-from langchain.schema import Document
+from langchain_core.documents import Document
 from backend.services.retriever_service import get_retriever_service
 from backend.services.document_service import get_document_service
 

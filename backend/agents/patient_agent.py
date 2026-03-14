@@ -1,22 +1,21 @@
 """
 Patient agent that simulates a patient in medical diagnosis roleplay.
 """
+import random
 from typing import List, Dict, Any, Optional
-from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
-from langchain.prompts import ChatPromptTemplate
-from langchain.chains import LLMChain
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from backend.prompts import PATIENT_AGENT_SYSTEM_PROMPT, PATIENT_BACKGROUND_TEMPLATE
 import config
 
 
 class PatientAgent:
     """Agent that simulates a patient during medical consultation."""
-    
+
     def __init__(self, disease_info: Dict[str, Any]):
         """
         Initialize the patient agent.
-        
+
         Args:
             disease_info: Dictionary containing disease, symptoms, etc.
         """
@@ -25,26 +24,21 @@ class PatientAgent:
         self.symptoms = disease_info.get("symptoms", [])
         self.treatments = disease_info.get("treatments", [])
         self.recommended_questions = disease_info.get("recommended_questions", [])
-        
+
+        # Conversation history for context
+        self.conversation_history: List[Dict[str, str]] = []
+
         # Initialize LLM (Groq)
         self.llm = ChatGroq(
             model=config.GROQ_MODEL,
             temperature=0.7,
             api_key=config.GROQ_API_KEY
         )
-        
-        # Initialize memory for conversation
-        self.memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True
-        )
-        
+
         # Create patient background
         self.patient_background = self._create_patient_background()
-        
-        # Build the chain
-        self.chain = self._build_chain()
-    
+        self.system_message = PATIENT_AGENT_SYSTEM_PROMPT + "\n\n" + self.patient_background
+
     def _create_patient_background(self) -> str:
         """Create the patient background prompt."""
         symptoms_text = ", ".join(self.symptoms)
@@ -52,7 +46,7 @@ class PatientAgent:
         severity = self._estimate_severity()
         age = self._assign_patient_age()
         gender = self._assign_patient_gender()
-        
+
         background = PATIENT_BACKGROUND_TEMPLATE.format(
             gender=gender,
             age=age,
@@ -62,129 +56,139 @@ class PatientAgent:
             disease=self.disease_name
         )
         return background
-    
-    def _build_chain(self) -> LLMChain:
-        """Build the LLM chain for patient responses."""
-        system_message = PATIENT_AGENT_SYSTEM_PROMPT + "\n\n" + self.patient_background
-        
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", system_message),
-            ("human", "{input}")
-        ])
-        
-        chain = LLMChain(llm=self.llm, prompt=prompt)
-        return chain
-    
+
     def respond_to_doctor(self, doctor_input: str) -> str:
         """
-        Generate patient response to doctor's input.
-        
+        Generate patient response to doctor's input using full conversation history.
+
         Args:
             doctor_input: Doctor's question or statement
-            
+
         Returns:
             Patient's response
         """
         try:
-            # Check if doctor input is about symptoms
-            response = self.chain.run(input=doctor_input)
-            return response.strip()
+            # Build messages with full conversation history
+            messages = [SystemMessage(content=self.system_message)]
+
+            for msg in self.conversation_history:
+                if msg["role"] == "doctor":
+                    messages.append(HumanMessage(content=msg["content"]))
+                else:
+                    messages.append(AIMessage(content=msg["content"]))
+
+            messages.append(HumanMessage(content=doctor_input))
+
+            response = self.llm.invoke(messages)
+            response_text = response.content.strip()
+
+            # Store in history
+            self.conversation_history.append({"role": "doctor", "content": doctor_input})
+            self.conversation_history.append({"role": "patient", "content": response_text})
+
+            return response_text
         except Exception as e:
-            # Fallback to rule-based response
-            return self._rule_based_response(doctor_input)
-    
+            print(f"LLM call failed: {e}")
+            fallback = self._rule_based_response(doctor_input)
+            self.conversation_history.append({"role": "doctor", "content": doctor_input})
+            self.conversation_history.append({"role": "patient", "content": fallback})
+            return fallback
+
     def _rule_based_response(self, doctor_input: str) -> str:
         """
         Generate rule-based response if LLM fails.
-        
+
         Args:
             doctor_input: Doctor's question
-            
+
         Returns:
             Simple rule-based response
         """
         doctor_lower = doctor_input.lower()
-        
+
         # Check for symptom questions
-        for symptom in self.symptoms:
-            if symptom.lower() in doctor_lower:
-                return f"Yes, I've been experiencing {symptom}. It started a few days ago."
-        
-        # Generic responses
-        if "how" in doctor_lower and ("long" in doctor_lower or "duration" in doctor_lower):
-            return "I've had these symptoms for about 3 days now."
-        
-        if "what" in doctor_lower or "when" in doctor_lower:
-            symptoms_str = ", ".join(self.symptoms[:3])
-            return f"I'm experiencing {symptoms_str}. It's been affecting me quite a bit."
-        
-        if "medicine" in doctor_lower or "medication" in doctor_lower or "treatment" in doctor_lower:
-            return "I haven't taken any medications for this yet. I was waiting to see what you'd recommend."
-        
-        # Default response
-        return "I'm not sure about that. Can you explain what you mean?"
-    
+        matching_symptoms = [s for s in self.symptoms if s.lower() in doctor_lower]
+        if matching_symptoms:
+            symptom = matching_symptoms[0]
+            responses = [
+                f"Yes, I've been having {symptom}. It started a few days ago and it's been bothering me.",
+                f"Actually yes, the {symptom} has been quite bad. It comes and goes throughout the day.",
+                f"Yes doctor, I do have {symptom}. It's been getting worse over the past few days.",
+            ]
+            return random.choice(responses)
+
+        # Duration questions
+        if any(w in doctor_lower for w in ["how long", "duration", "how many days", "when did", "started"]):
+            return f"It's been about {self._estimate_duration()} now. I was hoping it would go away on its own but it hasn't."
+
+        # Symptom description questions
+        if any(w in doctor_lower for w in ["what symptoms", "what are you feeling", "what brings you", "what's wrong", "complain"]):
+            main_symptoms = ", ".join(self.symptoms[:3])
+            other = f" I also have some {self.symptoms[3]}." if len(self.symptoms) > 3 else ""
+            return f"I've been having {main_symptoms}.{other} It's really affecting my daily life."
+
+        # Severity questions
+        if any(w in doctor_lower for w in ["severe", "scale", "how bad", "intensity", "rate"]):
+            return f"I'd say it's {self._estimate_severity()}. Some days are worse than others, but overall it's been hard to manage."
+
+        # Medication questions
+        if any(w in doctor_lower for w in ["medicine", "medication", "drug", "treatment", "taking any", "prescribed"]):
+            return "No, I haven't taken any medications for this yet. I wanted to get a proper diagnosis first."
+
+        # History questions
+        if any(w in doctor_lower for w in ["history", "before", "past", "previous", "family"]):
+            return "Not that I can recall. This is the first time I'm experiencing something like this."
+
+        # Allergy questions
+        if any(w in doctor_lower for w in ["allerg", "react"]):
+            return "No known allergies that I'm aware of, doctor."
+
+        # Yes/no style questions - try to match based on symptoms
+        if any(w in doctor_lower for w in ["do you have", "are you experiencing", "have you had", "any"]):
+            for symptom in self.symptoms:
+                words = symptom.lower().split()
+                if any(w in doctor_lower for w in words if len(w) > 3):
+                    return f"Yes, I do have {symptom}. It's been part of what I've been dealing with."
+            return "No, I don't think I've had that."
+
+        # Default - give a helpful response instead of confusion
+        symptoms_str = ", ".join(self.symptoms[:2])
+        return f"Well, my main concern is the {symptoms_str}. Is there anything specific you'd like to know about my condition?"
+
     def get_disease_info(self) -> Dict[str, Any]:
         """Get the disease information (for evaluation purposes)."""
         return self.disease_info
-    
-    def reset_conversation(self):
-        """Reset conversation memory."""
-        self.memory.clear()
-    
+
     @staticmethod
     def _estimate_duration() -> str:
         """Estimate duration of illness."""
-        return "3 days"
-    
+        return random.choice(["3 days", "about a week", "4-5 days", "nearly a week"])
+
     @staticmethod
     def _estimate_severity() -> str:
         """Estimate severity of illness."""
-        return "moderate"
-    
+        return random.choice(["moderate", "moderate to bad", "quite uncomfortable"])
+
     @staticmethod
     def _assign_patient_age() -> int:
         """Assign a patient age."""
-        return 35
-    
+        return random.choice([28, 32, 35, 40, 45, 50, 55])
+
     @staticmethod
     def _assign_patient_gender() -> str:
         """Assign a patient gender."""
-        return "male"
-    
-    def _generate_simple_response(self, doctor_input: str) -> str:
-        """
-        Generate a simple response using direct LLM call.
-        
-        Args:
-            doctor_input: Doctor's question
-            
-        Returns:
-            Patient's response
-        """
-        prompt = f"""{PATIENT_AGENT_SYSTEM_PROMPT}
-
-{self.patient_background}
-
-Doctor: {doctor_input}
-Patient:"""
-        
-        try:
-            response = self.llm.invoke(prompt)
-            return response.content.strip()
-        except Exception as e:
-            # Final fallback
-            return self._rule_based_response(doctor_input)
+        return random.choice(["male", "female"])
 
 
 def create_patient_agent(disease_info: Dict[str, Any]) -> PatientAgent:
     """
     Factory function to create a patient agent.
-    
+
     Args:
         disease_info: Disease information dictionary
-        
+
     Returns:
         PatientAgent instance
     """
     return PatientAgent(disease_info)
+

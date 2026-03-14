@@ -52,10 +52,14 @@ class EvaluationAgent:
             treatments="\n".join([f"- {t}" for t in treatments]),
             conversation=conversation_text
         )
-        
+
         # Get evaluation from LLM
         try:
-            response = self.llm.invoke(evaluation_prompt)
+            messages = [
+                {"role": "system", "content": EVALUATION_AGENT_SYSTEM_PROMPT},
+                {"role": "user", "content": evaluation_prompt}
+            ]
+            response = self.llm.invoke(messages)
             response_text = response.content.strip()
             
             # Parse JSON response

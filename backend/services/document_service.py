@@ -3,7 +3,7 @@ Document service for loading and processing medical documents from JSON.
 """
 import json
 from typing import List, Dict, Any, Optional
-from langchain.schema import Document
+from langchain_core.documents import Document
 import config
 
 

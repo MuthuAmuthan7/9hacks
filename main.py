@@ -1,6 +1,8 @@
 """
 Main FastAPI application for Medical AI Consultation System.
 """
+# Patch sqlite3 before any ChromaDB imports (needed in Docker)
+import chromadb_patch  # noqa: F401
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager

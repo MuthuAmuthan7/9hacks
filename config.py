@@ -1,16 +1,23 @@
 import os
 from typing import Optional
+from dotenv import load_dotenv
 
-# Qdrant Configuration
-QDRANT_HOST: str = os.getenv("QDRANT_HOST", "qdrant")
-QDRANT_PORT: int = int(os.getenv("QDRANT_PORT", "6333"))
+# Load .env file for local development (no-op if vars already set, e.g. in Docker)
+load_dotenv()
+
+# # Qdrant Configuration (commented out - switched to ChromaDB)
+# QDRANT_HOST: str = os.getenv("QDRANT_HOST", "qdrant")
+# QDRANT_PORT: int = int(os.getenv("QDRANT_PORT", "6333"))
+
+# ChromaDB Configuration
+CHROMA_PERSIST_DIR: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chroma_data")
 
 # ElevenLabs Configuration
 ELEVENLABS_API_KEY: Optional[str] = os.getenv("ELEVENLABS_API_KEY")
 
 # Groq Configuration
 GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY")
-GROQ_MODEL: str = "mixtral-8x7b-32768"  # Latest Groq model
+GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 # Vector Database Collection Name
 COLLECTION_NAME: str = "medical_knowledge"
