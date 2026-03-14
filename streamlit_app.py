@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from st_audiorec import st_audiorec
+from audio_recorder_streamlit import audio_recorder
 
 API_BASE_URL = "http://localhost:8000/api"
 
@@ -53,6 +53,7 @@ def init_session_state():
         "evaluation": None,
         "disease_revealed": None,
         "voice_text": None,
+        "last_audio_id": None,
     }
     for key, val in defaults.items():
         if key not in st.session_state:
@@ -111,20 +112,31 @@ def inject_css():
         padding: 0.8rem;
         margin: 0.5rem 0;
     }
-    .voice-section {
+    .voice-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
         background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border: 1px solid #bbdefb;
-    }
-    .voice-transcript {
-        background: #fff;
         border-radius: 8px;
-        padding: 0.8rem;
-        margin-top: 0.5rem;
-        border-left: 4px solid #1565C0;
-        font-style: italic;
+        font-size: 0.85rem;
+        color: #555;
+        margin-bottom: 0.5rem;
+    }
+    .transcribing-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
     }
     </style>
     """, unsafe_allow_html=True)
@@ -159,6 +171,7 @@ def render_sidebar():
                 st.session_state.evaluation = None
                 st.session_state.disease_revealed = None
                 st.session_state.voice_text = None
+                st.session_state.last_audio_id = None
                 st.rerun()
 
         # Case status
@@ -199,13 +212,11 @@ def render_sidebar():
 
 def _send_doctor_message(prompt: str):
     """Send a doctor message and get the patient's response."""
-    # Show doctor message immediately
-    with st.chat_message("user", avatar="🩺"):
+    with st.chat_message("user", avatar= None):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "doctor", "content": prompt})
 
-    # Get patient response
-    with st.chat_message("assistant", avatar="🤒"):
+    with st.chat_message("assistant", avatar= None):
         with st.spinner("Patient is responding..."):
             data = api_call("POST", "/doctor_input", json={
                 "case_id": st.session_state.case_id,
@@ -243,40 +254,55 @@ def render_chat_tab():
     # Render messages
     for msg in st.session_state.messages:
         if msg["role"] == "doctor":
-            with st.chat_message("user", avatar="🩺"):
+            with st.chat_message("user", avatar=None):
                 st.markdown(msg["content"])
         else:
-            with st.chat_message("assistant", avatar="🤒"):
+            with st.chat_message("assistant", avatar=None):
                 st.markdown(msg["content"])
 
     # Voice + Chat input
     if st.session_state.case_active:
-        # ── Voice input section ──────────────────────────────────────────
-        with st.expander("🎤 Voice Input — click to speak your question", expanded=False):
+        # ── Voice input: real-time mic capture ───────────────────────────
+        col_hint, col_mic = st.columns([5, 1])
+        with col_hint:
             st.markdown(
-                '<div class="voice-section">'
-                "<b>Record your question:</b> Click the microphone, speak, then stop recording."
+                '<div class="voice-hint">'
+                "<b>Voice Input</b> — Click the mic icon to speak your question. "
                 "</div>",
                 unsafe_allow_html=True,
             )
-            audio_bytes = st_audiorec()
+        with col_mic:
+            audio_bytes = audio_recorder(
+                text="",
+                recording_color="#e74c3c",
+                neutral_color="#1565C0",
+                icon_size="2x",
+                pause_threshold=2.0,   # auto-stop after 2s of silence
+                sample_rate=41_000,
+            )
 
-            if audio_bytes:
-                with st.spinner("🔄 Transcribing your speech..."):
-                    transcription = transcribe_audio(audio_bytes)
+        # Process captured audio automatically
+        if audio_bytes:
+            # Deduplicate: only process new audio (avoid re-processing on rerun)
+            audio_id = hash(audio_bytes)
+            if audio_id != st.session_state.last_audio_id:
+                st.session_state.last_audio_id = audio_id
+
+                st.markdown(
+                    '<div class="transcribing-status">'
+                    "🔄 Transcribing your speech…"
+                    "</div>",
+                    unsafe_allow_html=True,
+                )
+                transcription = transcribe_audio(audio_bytes)
 
                 if transcription:
-                    st.markdown(
-                        f'<div class="voice-transcript">📝 <b>You said:</b> {transcription}</div>',
-                        unsafe_allow_html=True,
-                    )
-                    if st.button("✅ Send this to the patient", key="send_voice", type="primary"):
-                        st.session_state.voice_text = transcription
-                        st.rerun()
+                    st.session_state.voice_text = transcription
+                    st.rerun()
                 else:
                     st.warning("Could not transcribe audio. Please try again or type your question below.")
 
-        # If a voice message is pending, send it
+        # If a voice transcription is ready, send it as a doctor message
         if st.session_state.voice_text:
             prompt = st.session_state.voice_text
             st.session_state.voice_text = None

@@ -11,5 +11,5 @@ python-multipart
 requests
 python-dotenv
 streamlit
-streamlit-audiorec
+audio-recorder-streamlit
 
